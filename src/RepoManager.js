@@ -1,11 +1,12 @@
-class RepoManager {
-  constructor({ octokitClient, uiManager }) {
-    this.octokitClient = octokitClient;
-    this.uiManager = uiManager;
-  }
+import { UserInterfaceManager } from "./UserInterfaceManager.js";
+import fs from "node:fs";
 
-  prWhitelist = [];
-  prBlacklist = [];
+class RepoManager {
+  constructor({ octokitClient, whitelist, blacklist}) {
+    this.octokitClient = octokitClient;
+    this.prWhitelist = JSON.parse(whitelist);
+    this.prBlacklist = JSON.parse(blacklist);
+  }
 
   async fetchReposWithDependabotPRs(orgName) {
     const repos = await this.octokitClient.getRepos(orgName);
@@ -16,7 +17,7 @@ class RepoManager {
           repo.name
         );
         return {
-          prs: this.filterDependabotPRs(pulls),
+          prs: RepoManager.filterDependabotPRs(pulls),
           repo: repo.name,
         };
       })
@@ -24,7 +25,7 @@ class RepoManager {
     return reposWithDependabotPrs.filter((repo) => repo.prs.length > 0);
   }
 
-  filterDependabotPRs(prList) {
+  static filterDependabotPRs(prList) {
     return prList.filter((pr) => pr.user.login === "dependabot[bot]");
   }
 
@@ -75,10 +76,16 @@ class RepoManager {
           `Skipping PR #${pr.number} in repo ${pr.base.repo.full_name} whenever it appears in any repo`
         );
         this.prBlacklist.push(packageNameAndVersion);
+        fs.writeFileSync(
+          "/tmp/dependabot-blacklist.json",
+          JSON.stringify(this.prBlacklist)
+        );
         break;
       case "q":
         console.log("Quitting...");
+        // eslint-disable-next-line n/no-process-exit
         process.exit(0);
+      // eslint-disable-next-line no-fallthrough
       case "all":
         await this.octokitClient.approveAndMergePr(
           pr.base.repo.owner.login,
@@ -88,13 +95,18 @@ class RepoManager {
 
         // add the title of the PR to the whitelist
         this.prWhitelist.push(packageNameAndVersion);
+
+        fs.writeFileSync(
+          "/tmp/dependabot-whitelist.json",
+          JSON.stringify(this.prWhitelist)
+        );
         break;
       default:
         console.log("Invalid input. Please try again.");
     }
   }
 
-  derivePackageNameAndVersion = (pr) => {
+  static derivePackageNameAndVersion = (pr) => {
     const packageNameAndVersion = pr.title.split("bump")[0].split("from");
     const packageName = packageNameAndVersion[0].split(" ")[1].trim();
     const newPackageVersion = packageNameAndVersion[1]
@@ -103,7 +115,7 @@ class RepoManager {
       .trim();
 
     return `${packageName}-${newPackageVersion}`;
-  }
+  };
 
   async checkIfPrIsWhiteOrBlacklisted(pr, packageNameAndVersion) {
     if (this.prWhitelist.includes(packageNameAndVersion)) {
@@ -119,7 +131,7 @@ class RepoManager {
       );
 
       // wait 5 seconds so the user can register the message
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => {setTimeout(resolve, 5000)});
 
       return true;
     }
@@ -131,22 +143,24 @@ class RepoManager {
       );
 
       // wait 5 seconds so the user can register the message
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => {setTimeout(resolve, 5000)});
 
       return true;
     }
+
+    return false;
   }
 
-  async manageOnePr(pr) {
-    await this.uiManager.displayOnePr(pr);
+  async manageOnePr(pr, totalPrs, index) {
+    await UserInterfaceManager.displayOnePr(pr, totalPrs, index);
 
-    const packageNameAndVersion = this.derivePackageNameAndVersion(pr);
+    const packageNameAndVersion = RepoManager.derivePackageNameAndVersion(pr);
 
     if (await this.checkIfPrIsWhiteOrBlacklisted(pr, packageNameAndVersion)) {
       return;
     }
 
-    const actionFromUser = await this.uiManager.getUserInput(
+    const actionFromUser = await UserInterfaceManager.getUserInput(
       `Would you like to?
       (m) Approve and merge
       (r) Rebase
@@ -160,18 +174,27 @@ class RepoManager {
       `
     );
 
-    await this.processUserInputForOnePr(pr, actionFromUser, packageNameAndVersion);
+    await this.processUserInputForOnePr(
+      pr,
+      actionFromUser,
+      packageNameAndVersion
+    );
   }
 
-  async manageOneRepo(repo) {
-    for (let i = 0; i < repo.prs.length; i++) {
-      await this.manageOnePr(repo.prs[i]);
+  prsManaged = 0;
+
+  async manageOneRepo(repo, totalPrs) {
+    for (let i = 0; i < repo.prs.length; i += 1) {
+      await this.manageOnePr(repo.prs[i], totalPrs, this.prsManaged);
+      this.prsManaged += 1;
     }
   }
 
   async manageAllPrs(repos) {
-    for (let i = 0; i < repos.length; i++) {
-      await this.manageOneRepo(repos[i]);
+    const totalPrs = repos.reduce((acc, repo) => acc + repo.prs.length, 0);
+
+    for (let i = 0; i < repos.length; i += 1) {
+      await this.manageOneRepo(repos[i], totalPrs);
     }
   }
 }

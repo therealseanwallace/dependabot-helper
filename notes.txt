@@ -1,7 +1,2 @@
-1. account for dependabot's naming being different across repos. it shouldn't have to match the full name, just a substring
-split on bump and from, ensure that the package name and final version
-
-2. track how many PRs we have done and how many are left
-3. refine the ux a little to make important alerts more visible
-4. maintain the blacklist/whitelist on disk storage so we don't have to sall the same ones every setTimeout
-5. Add a flag to ignore the blacklist on a given run
+1. Add a flag to ignore the blacklist on a given run
+2. refine the ux a little to make important alerts more visible
