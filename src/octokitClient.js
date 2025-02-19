@@ -22,8 +22,8 @@ export class OctokitClient {
       const response = await this.octokit.request(
         "GET /repos/{owner}/{repo}/pulls",
         {
-          owner: owner,
-          repo: repo,
+          owner,
+          repo,
         }
       );
       return response.data;
@@ -38,8 +38,8 @@ export class OctokitClient {
       await this.octokit.request(
         "POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews",
         {
-          owner: owner,
-          repo: repo,
+          owner,
+          repo,
           pull_number: prNumber,
           event: "APPROVE",
         }
@@ -48,8 +48,8 @@ export class OctokitClient {
       await this.octokit.request(
         "PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge",
         {
-          owner: owner,
-          repo: repo,
+          owner,
+          repo,
           pull_number: prNumber,
         }
       );
@@ -59,7 +59,7 @@ export class OctokitClient {
       await this.addRecreateComment(owner, repo, prNumber);
 
       // wait for 5 seconds before proceeding so the user can see the message
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => {setTimeout(resolve, 500)});
     }
   }
 
@@ -68,8 +68,8 @@ export class OctokitClient {
       await this.octokit.request(
         "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
         {
-          owner: owner,
-          repo: repo,
+          owner,
+          repo,
           issue_number: prNumber,
           body: "@dependabot rebase",
         }
@@ -85,8 +85,8 @@ export class OctokitClient {
       await this.octokit.request(
         "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
         {
-          owner: owner,
-          repo: repo,
+          owner,
+          repo,
           issue_number: prNumber,
           body: "@dependabot recreate",
         }
@@ -102,8 +102,8 @@ export class OctokitClient {
       await this.octokit.request(
         "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
         {
-          owner: owner,
-          repo: repo,
+          owner,
+          repo,
           issue_number: prNumber,
           body: "@dependabot ignore this major version",
         }
@@ -119,8 +119,8 @@ export class OctokitClient {
       await this.octokit.request(
         "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
         {
-          owner: owner,
-          repo: repo,
+          owner,
+          repo,
           issue_number: prNumber,
           body: "@dependabot ignore this minor version",
         }

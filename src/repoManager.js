@@ -28,7 +28,7 @@ class RepoManager {
     return prList.filter((pr) => pr.user.login === "dependabot[bot]");
   }
 
-  async processUserInputForOnePr(pr, actionFromUser) {
+  async processUserInputForOnePr(pr, actionFromUser, packageNameAndVersion) {
     switch (actionFromUser) {
       case "m":
         await this.octokitClient.approveAndMergePr(
@@ -74,9 +74,9 @@ class RepoManager {
         console.log(
           `Skipping PR #${pr.number} in repo ${pr.base.repo.full_name} whenever it appears in any repo`
         );
-        this.prBlacklist.push(pr.title);
+        this.prBlacklist.push(packageNameAndVersion);
         break;
-        case "q":
+      case "q":
         console.log("Quitting...");
         process.exit(0);
       case "all":
@@ -87,17 +87,26 @@ class RepoManager {
         );
 
         // add the title of the PR to the whitelist
-        this.prWhitelist.push(pr.title);
+        this.prWhitelist.push(packageNameAndVersion);
         break;
       default:
         console.log("Invalid input. Please try again.");
     }
   }
 
-  async manageOnePr(pr) {
-    await this.uiManager.displayOnePr(pr);
+  derivePackageNameAndVersion = (pr) => {
+    const packageNameAndVersion = pr.title.split("bump")[0].split("from");
+    const packageName = packageNameAndVersion[0].split(" ")[1].trim();
+    const newPackageVersion = packageNameAndVersion[1]
+      .trim()
+      .split("to")[1]
+      .trim();
 
-    if (this.prWhitelist.includes(pr.title)) {
+    return `${packageName}-${newPackageVersion}`;
+  }
+
+  async checkIfPrIsWhiteOrBlacklisted(pr, packageNameAndVersion) {
+    if (this.prWhitelist.includes(packageNameAndVersion)) {
       // if we've whitelisted this PR, we can just merge it
       console.log(
         `PR #${pr.number} in repo ${pr.base.repo.full_name} has been approved for all repos. Merging PR ${pr.number} in repo ${pr.base.repo.full_name}`
@@ -112,10 +121,10 @@ class RepoManager {
       // wait 5 seconds so the user can register the message
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
-      return;
+      return true;
     }
 
-    if (this.prBlacklist.includes(pr.title)) {
+    if (this.prBlacklist.includes(packageNameAndVersion)) {
       // if we've blacklisted this PR, we can skip it
       console.log(
         `PR #${pr.number} in repo ${pr.base.repo.full_name} has been blacklisted. Skipping PR ${pr.number} in repo ${pr.base.repo.full_name}`
@@ -124,6 +133,16 @@ class RepoManager {
       // wait 5 seconds so the user can register the message
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
+      return true;
+    }
+  }
+
+  async manageOnePr(pr) {
+    await this.uiManager.displayOnePr(pr);
+
+    const packageNameAndVersion = this.derivePackageNameAndVersion(pr);
+
+    if (await this.checkIfPrIsWhiteOrBlacklisted(pr, packageNameAndVersion)) {
       return;
     }
 
@@ -141,7 +160,7 @@ class RepoManager {
       `
     );
 
-    await this.processUserInputForOnePr(pr, actionFromUser);
+    await this.processUserInputForOnePr(pr, actionFromUser, packageNameAndVersion);
   }
 
   async manageOneRepo(repo) {

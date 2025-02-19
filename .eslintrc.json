@@ -1,0 +1,41 @@
+{
+  "extends": [
+    "airbnb-base",
+    "plugin:import/errors",
+    "plugin:n/recommended",
+    "plugin:promise/recommended",
+    "prettier"
+  ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": { "requireConfigFile": false },
+  "plugins": ["import", "n", "promise", "unicorn", "plugin:import/typescript"],
+  "rules": {
+    "no-console": "off",
+    "no-var": "error",
+    "strict": "off",
+    "arrow-body-style": "error",
+    "prefer-arrow-callback": "error",
+    "n/no-unpublished-import": "off",
+    "no-underscore-dangle": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      { "js": "always", "mjs": "always", "jsx": "always" }
+    ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": ["*.config.{cjs,js,mjs,json}", "**/*.test.{js,jsx}"],
+        "optionalDependencies": false
+      }
+    ],
+    "import/order": [
+      "error",
+      { "groups": [["builtin", "external"], "parent", "sibling", "index"] }
+    ],
+    "import/prefer-default-export": "off",
+    "linebreak-style": ["error", "unix"],
+    "unicorn/prefer-node-protocol": "error",
+    "no-param-reassign": ["error", { "props": false }]
+  }
+}
