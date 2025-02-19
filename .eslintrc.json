@@ -4,11 +4,12 @@
     "plugin:import/errors",
     "plugin:n/recommended",
     "plugin:promise/recommended",
-    "prettier"
+    "prettier",
+    "plugin:import/typescript"
   ],
   "parser": "@babel/eslint-parser",
   "parserOptions": { "requireConfigFile": false },
-  "plugins": ["import", "n", "promise", "unicorn", "plugin:import/typescript"],
+  "plugins": ["import", "n", "promise", "unicorn", "import-x"],
   "rules": {
     "no-console": "off",
     "no-var": "error",
@@ -36,6 +37,10 @@
     "import/prefer-default-export": "off",
     "linebreak-style": ["error", "unix"],
     "unicorn/prefer-node-protocol": "error",
-    "no-param-reassign": ["error", { "props": false }]
+    "no-param-reassign": ["error", { "props": false }],
+    "no-await-in-loop": "off",
+    "import/no-unresolved": ["error", {
+      "ignore": ["^@octokit/core$"]
+    }]
   }
 }
