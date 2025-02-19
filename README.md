@@ -11,7 +11,8 @@ This tool is designed to streamline the management of Dependabot pull requests (
 - **Manage Individual Repositories:** Focus management on a specific repository, allowing for detailed control.
 - **Merge, Rebase, or Recreate PRs:** Choose how to handle each PR with options to approve, merge, rebase, or recreate.
 - **Version Control:** Opt to ignore minor or major version updates.
-- **Skip or Block PRs:** Skip certain PRs or block them from appearing in the future.
+- **Skip or Block PRs:** Skip certain PRs or block them from appearing in the future. Persists across sessions by storing blocked PRs in a JSON file in /tmp.
+- **Whitelist PRS:** Whitelist given packages and versions to ensure they are always approved by the tool.
   
 ## Prerequisites
 
