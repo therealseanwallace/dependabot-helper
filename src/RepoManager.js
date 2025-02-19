@@ -1,13 +1,12 @@
 import { UserInterfaceManager } from "./UserInterfaceManager.js";
+import fs from "node:fs";
 
 class RepoManager {
-  constructor({ octokitClient, }) {
+  constructor({ octokitClient, whitelist, blacklist}) {
     this.octokitClient = octokitClient;
+    this.prWhitelist = JSON.parse(whitelist);
+    this.prBlacklist = JSON.parse(blacklist);
   }
-
-  prWhitelist = [];
-
-  prBlacklist = [];
 
   async fetchReposWithDependabotPRs(orgName) {
     const repos = await this.octokitClient.getRepos(orgName);
@@ -77,6 +76,10 @@ class RepoManager {
           `Skipping PR #${pr.number} in repo ${pr.base.repo.full_name} whenever it appears in any repo`
         );
         this.prBlacklist.push(packageNameAndVersion);
+        fs.writeFileSync(
+          "/tmp/dependabot-blacklist.json",
+          JSON.stringify(this.prBlacklist)
+        );
         break;
       case "q":
         console.log("Quitting...");
@@ -92,6 +95,11 @@ class RepoManager {
 
         // add the title of the PR to the whitelist
         this.prWhitelist.push(packageNameAndVersion);
+
+        fs.writeFileSync(
+          "/tmp/dependabot-whitelist.json",
+          JSON.stringify(this.prWhitelist)
+        );
         break;
       default:
         console.log("Invalid input. Please try again.");
