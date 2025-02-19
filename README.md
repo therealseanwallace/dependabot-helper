@@ -12,7 +12,7 @@ This tool is designed to streamline the management of Dependabot pull requests (
 - **Merge, Rebase, or Recreate PRs:** Choose how to handle each PR with options to approve, merge, rebase, or recreate.
 - **Version Control:** Opt to ignore minor or major version updates.
 - **Skip or Block PRs:** Skip certain PRs or block them from appearing in the future. Persists across sessions by storing blocked PRs in a JSON file in /tmp.
-- **Whitelist PRS:** Whitelist given packages and versions to ensure they are always approved by the tool.
+- **Whitelist PRS:** Whitelist given packages and versions to ensure they are always approved by the tool. Persists across sessions by storing blocked PRs in a JSON file in /tmp.
   
 ## Prerequisites
 
