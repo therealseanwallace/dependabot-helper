@@ -1,7 +1,7 @@
-import { ConfigManager } from "./configManager.js";
-import { OctokitClient } from "./octokitClient.js";
-import { RepoManager } from "./repoManager.js";
-import { UserInterfaceManager } from "./uiManager.js";
+import { ConfigManager } from "./ConfigManager.js";
+import { OctokitClient } from "./OctokitClient.js";
+import { RepoManager } from "./RepoManager.js";
+import { UserInterfaceManager } from "./UserInterfaceManager.js";
 
 async function run() {
   ConfigManager.loadConfig();
@@ -10,8 +10,7 @@ async function run() {
   const authToken = process.env.PERSONAL_ACCESS_TOKEN;
 
   const octokitClient = new OctokitClient(authToken);
-  const uiManager = new UserInterfaceManager();
-  const repoManager = new RepoManager({ octokitClient, uiManager });
+  const repoManager = new RepoManager({ octokitClient });
 
   const nonEmptyRepos = await repoManager.fetchReposWithDependabotPRs(orgName);
 
@@ -24,9 +23,9 @@ async function run() {
     return prCount;
   }
 
-  uiManager.displayReposWithPRs(nonEmptyRepos, orgName);
+  UserInterfaceManager.displayReposWithPRs(nonEmptyRepos, orgName);
 
-  const userResponse = await uiManager.getUserInput(
+  const userResponse = await UserInterfaceManager.getUserInput(
     `Do you want to manage all ${await countPrs()} of these PRs, one specific repo, or quit?\nPlease enter "all", the name of the repo, or "q": `
   );
 
