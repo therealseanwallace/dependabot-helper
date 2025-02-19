@@ -2,7 +2,7 @@ import { UserInterfaceManager } from "./UserInterfaceManager.js";
 import fs from "node:fs";
 
 class RepoManager {
-  constructor({ octokitClient, whitelist, blacklist}) {
+  constructor({ octokitClient, whitelist, blacklist }) {
     this.octokitClient = octokitClient;
     this.prWhitelist = JSON.parse(whitelist);
     this.prBlacklist = JSON.parse(blacklist);
@@ -107,9 +107,12 @@ class RepoManager {
   }
 
   static derivePackageNameAndVersion = (pr) => {
-    const packageNameAndVersion = pr.title.split("bump")[0].split("from");
-    const packageName = packageNameAndVersion[0].split(" ")[1].trim();
-    const newPackageVersion = packageNameAndVersion[1]
+    const lowerCaseTitle = pr.title.toLowerCase();
+    const packageNameAndVersion = lowerCaseTitle.split("bump")[1].trim();
+    // [0].split("from");
+    const packageNameAndVersionArray = packageNameAndVersion.split("from");
+    const packageName = packageNameAndVersionArray[0].trim();
+    const newPackageVersion = packageNameAndVersionArray[1]
       .trim()
       .split("to")[1]
       .trim();
@@ -131,7 +134,9 @@ class RepoManager {
       );
 
       // wait 5 seconds so the user can register the message
-      await new Promise((resolve) => {setTimeout(resolve, 5000)});
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5000);
+      });
 
       return true;
     }
@@ -143,7 +148,9 @@ class RepoManager {
       );
 
       // wait 5 seconds so the user can register the message
-      await new Promise((resolve) => {setTimeout(resolve, 5000)});
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5000);
+      });
 
       return true;
     }
